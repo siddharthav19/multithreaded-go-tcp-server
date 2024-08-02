@@ -6,6 +6,16 @@ import (
 	"os"
 )
 
+/*
+
+An HTTP request/response is made up of three parts, each separated by a CRLF (\r\n):
+
+1. Request/Response line.
+2. Zero or more headers, each ending with a CRLF.
+3. Optional request/response body. and at the end an escape character \x00
+
+*/
+
 func main() {
 	l, err := net.Listen("tcp", "localhost:4221")
 	if err != nil {
