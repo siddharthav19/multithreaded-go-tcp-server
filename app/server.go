@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 )
 
 /*
@@ -24,11 +25,27 @@ func main() {
 	}
 	for {
 		con, err := l.Accept()
-		fmt.Print(con.RemoteAddr())
 		if err != nil {
 			fmt.Println("Error accepting connection: ", err.Error())
 			os.Exit(1)
 		}
+		go handleRequest(con)
 	}
 
+}
+
+func handleRequest(con net.Conn) {
+	req := make([]byte, 1024)
+	con.Read(req)
+	req_string := string(req)
+	request_line := strings.SplitN(req_string, "\r\n", 2)[0]
+	url_path := strings.SplitN(request_line, " ", 3)[1]
+	if strings.Contains(url_path, "/echo/") {
+		param := strings.SplitAfter(url_path, "/echo/")[1]
+		response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", len(param), param)
+		con.Write([]byte(response))
+	} else {
+		con.Write([]byte("HTTP/1.1 404 Not Found\r\n\r\n"))
+	}
+	con.Close()
 }
